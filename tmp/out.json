@@ -1,0 +1,90 @@
+{
+  "tokens": [
+    {
+      "id": -1,
+      "name": "",
+      "rules": {
+        "v1": {
+          "pipeline": true,
+          "models": {},
+          "notebooks": {}
+        }
+      },
+      "start_date": "1970-01-01",
+      "end_date": "1970-01-01",
+      "last_used": "2021-12-09"
+    },
+    {
+      "id": 2,
+      "name": "token1",
+      "rules": {
+        "v1": {
+          "pipeline": false,
+          "models": {
+            "a": true,
+            "b": false
+          },
+          "notebooks": {
+            "b": false,
+            "a": true
+          }
+        }
+      },
+      "start_date": "1970-01-01",
+      "end_date": "1970-01-01",
+      "last_used": "2021-12-09"
+    },
+    {
+      "id": 3,
+      "name": "token1",
+      "rules": {
+        "v1": {
+          "pipeline": false,
+          "models": {
+            "b": false,
+            "a": true
+          },
+          "notebooks": {
+            "a": true,
+            "b": false
+          }
+        }
+      },
+      "start_date": "1970-01-01",
+      "end_date": "1970-01-01",
+      "last_used": "2021-12-09"
+    },
+    {
+      "id": 4,
+      "name": "token1",
+      "rules": {
+        "v1": {
+          "pipeline": false,
+          "models": {
+            "a": true,
+            "b": false
+          },
+          "notebooks": {
+            "a": true,
+            "b": false
+          }
+        }
+      },
+      "start_date": "1970-01-01",
+      "end_date": "1970-01-01",
+      "last_used": "2021-12-09"
+    }
+  ],
+  "template": {
+    "name": "",
+    "rules": {
+      "v1": {
+        "pipeline": true,
+        "models": {},
+        "notebooks": {}
+      }
+    },
+    "start_date": "1970-01-01",
+    "end_date": "1970-01-01"
+  }
+}

@@ -45,6 +45,7 @@ pub struct ResourceModel {
 pub enum Resource {
     Notebook,
     Model,
+    Profile
 }
 
 pub async fn get_resource(
@@ -65,6 +66,7 @@ pub async fn get_resource(
         match resource {
             Notebook => &config.kubeflow.notebook_resource,
             Model => &config.kubeflow.model_resource,
+            Profile => &config.kubeflow.profile_resource,
         }
     );
 

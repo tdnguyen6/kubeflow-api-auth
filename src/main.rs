@@ -7,12 +7,6 @@ use actix_files::Files;
 use actix_web::{get, App, HttpServer, Responder, web};
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
-
-#[get("/api")]
-async fn index() -> actix_web::Result<impl Responder, Box<dyn std::error::Error>> {
-    Ok("good")
-}
-
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     dotenv().ok();
@@ -30,8 +24,14 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .app_data(web::Data::new(config2.clone()))
-            .service(index)
-            .service(services::api_key::get_key)
+            .service(services::api_key::view_content)
+            .service(services::api_key::roll)
+            .service(services::api_token::view_content)
+            .service(services::api_token::delete)
+            .service(services::api_token::list)
+            .service(services::api_token::create)
+            .service(services::check::check)
+            .service(services::sync::reconcile)
             .service(Files::new("/", "frontend/dist").index_file("index.html"))
     })
     .bind(format!("{}:{}", config.server.host, config.server.port))?

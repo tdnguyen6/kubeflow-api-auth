@@ -25,6 +25,7 @@ pub struct KubeflowCfg {
     pub interactive_endpoint: String,
     pub model_resource: String,
     pub notebook_resource: String,
+    pub profile_resource: String,
 }
 
 #[derive(Deserialize, Default, Clone)]

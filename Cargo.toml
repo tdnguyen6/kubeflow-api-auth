@@ -10,7 +10,7 @@ actix-web = "4.0.0-beta.13"
 anyhow = "1.0.51"
 derive_builder = "0.10.2"
 dotenv = "0.15.0"
-sqlx = { version = "0.5.9", features = [ "postgres", "runtime-tokio-rustls" ] }
+sqlx = { version = "0.5.9", features = [ "postgres", "runtime-tokio-rustls", "chrono" ] }
 serde = "1.0.130"
 config = "0.11.0"
 jsonwebtoken = "7.2.0"
