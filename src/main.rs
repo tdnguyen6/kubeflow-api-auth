@@ -2,6 +2,7 @@ mod config;
 mod models;
 mod services;
 mod utils;
+mod rules;
 
 use actix_files::Files;
 use actix_web::{get, App, HttpServer, Responder, web};
@@ -22,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(pool))
             .app_data(web::Data::new(config2.clone()))
             .service(services::api_key::view_content)
             .service(services::api_key::roll)
