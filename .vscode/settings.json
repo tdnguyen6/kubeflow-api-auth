@@ -1,6 +1,6 @@
 {
   "terminal.integrated.env.linux": {
-    "DATABASE_URL": "postgres://pg:pg@localhost/pg"
+    "DATABASE_URL": "postgres://pg:pg@localhost:5433/pg"
   },
   "sqltools.connections": [
     {
@@ -10,7 +10,7 @@
       "askForPassword": true,
       "driver": "PostgreSQL",
       "name": "api-auth-db",
-      "connectString": "postgres://pg:pg@localhost/pg"
+      "connectString": "postgres://pg:pg@localhost:5433/pg"
     }
   ]
 }

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, iter::FromIterator};
 
 use serde::{Deserialize, Serialize};
 
@@ -46,11 +46,12 @@ pub struct TokenDTO {
 
 impl Default for TokenCore {
     fn default() -> Self {
+        let today = chrono::Utc::now();
         Self {
             name: String::default(),
             rules: Rule::default(),
-            start_date: String::from("1970-01-01"),
-            end_date: String::from("1970-01-01"),
+            start_date: today.format("%Y-%m-%d").to_string(),
+            end_date: today.format("%Y-%m-%d").to_string(),
         }
     }
 }

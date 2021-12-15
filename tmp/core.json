@@ -1,7 +1,7 @@
 {
-  "name": "token1",
+  "name": "token15",
   "start_date": "1970-01-01",
-  "end_date": "1970-01-01",
+  "end_date": "2019-01-01",
   "rules": {
     "v1": {
       "pipeline": false,

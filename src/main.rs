@@ -1,13 +1,19 @@
 mod config;
 mod models;
+mod rules;
 mod services;
 mod utils;
-mod rules;
 
 use actix_files::Files;
-use actix_web::{get, App, HttpServer, Responder, web};
+use actix_web::{get, web, App, HttpServer, Responder};
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
+
+#[get("/health")]
+async fn health() -> impl Responder {
+    String::from("good")
+}
+
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     dotenv().ok();
@@ -23,8 +29,9 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(pool))
+            .app_data(web::Data::new(pool.clone()))
             .app_data(web::Data::new(config2.clone()))
+            .service(health)
             .service(services::api_key::view_content)
             .service(services::api_key::roll)
             .service(services::api_token::view_content)
@@ -33,6 +40,7 @@ async fn main() -> anyhow::Result<()> {
             .service(services::api_token::create)
             .service(services::check::check)
             .service(services::sync::reconcile)
+            .service(services::frontend)
             .service(Files::new("/", "frontend/dist").index_file("index.html"))
     })
     .bind(format!("{}:{}", config.server.host, config.server.port))?

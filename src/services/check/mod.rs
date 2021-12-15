@@ -1,9 +1,16 @@
-use std::io::BufRead;
+use std::fmt::Debug;
 
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use sqlx::Executor;
+use actix_web::{get, http::header::ContentType, web, HttpRequest, HttpResponse, Responder};
+use askama::Template;
 
 use crate::{config::Config, models::api_token::TokenData, rules};
+
+#[derive(Template)]
+#[template(path = "401.html", escape = "none")]
+struct Error401Template<'a> {
+    msg: &'a str,
+    location: &'a str,
+}
 
 #[get("/check/{upstream_url:.*}")]
 async fn check(
@@ -21,9 +28,16 @@ async fn check(
     if auth_res.success {
         Ok(HttpResponse::Ok().body(auth_res.msg))
     } else {
-        Ok(HttpResponse::SeeOther()
-            .append_header(("Location", kf_endpoint))
-            .body(auth_res.msg))
+        Ok(HttpResponse::Unauthorized()
+            .append_header(ContentType::html())
+            .body(
+                Error401Template {
+                    msg: &auth_res.msg,
+                    location: &kf_endpoint,
+                }
+                .render()
+                .unwrap(),
+            ))
     }
 }
 
@@ -93,9 +107,22 @@ async fn token_auth(
         );
 
         if let Ok(token_data) = token_data_res {
+            let today = chrono::Utc::now().date().naive_utc();
+
+            if chrono::NaiveDate::parse_from_str(
+                token_data.claims.core.end_date.as_str(),
+                "%Y-%m-%d",
+            )? > today
+            {
+                return Ok(AuthRes {
+                    success: false,
+                    msg: String::from("token expired"),
+                });
+            }
+
             sqlx::query!(
                 "UPDATE api_token SET last_used = $1 WHERE id = $2",
-                &chrono::Utc::now().date().naive_utc(),
+                &today,
                 &token_data.claims.id,
             )
             .execute(&**pool)
@@ -103,11 +130,11 @@ async fn token_auth(
 
             let upstream_url = req.match_info().query("upstream_url");
 
-            if rules::check(upstream_url, &token_data.claims.core.rules)? {
+            if rules::check(upstream_url, &token_data.claims.core.rules).await? {
                 return Ok(AuthRes {
                     success: true,
                     msg: String::default(),
-                })
+                });
             }
         }
     }

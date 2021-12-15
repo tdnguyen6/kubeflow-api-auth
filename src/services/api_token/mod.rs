@@ -155,7 +155,8 @@ async fn list(
                 },
             })
             .collect(),
-        template: TokenCore::default().better_default(&config).await?,
+        template: TokenCore::default()
+        // .better_default(&config).await.expect("template error"),
     };
 
     Ok(HttpResponse::Ok().json(dto))

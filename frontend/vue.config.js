@@ -9,4 +9,8 @@ module.exports = {
       },
     },
   },
+  publicPath: process.env.PUBLIC_PATH,
+  devServer: {
+    public: process.env.BASE_URL,
+  },
 };

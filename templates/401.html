@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Unauthorized Acess</title>
+  </head>
+  <body>
+    Unauthorized reason: {{ msg }}
+    <br />
+    Redirect to login page in <span id="seconds">5</span>
+  </body>
+  <script>
+    let timeout = 4;
+    setInterval(function () {
+      document.getElementById("seconds").innerText = timeout;
+      if (!timeout--) {
+        {
+          location.replace("{{ location }}");
+        }
+      }
+    }, 1000);
+  </script>
+</html>
