@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use actix_web::{delete, get, post, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::PgPool;

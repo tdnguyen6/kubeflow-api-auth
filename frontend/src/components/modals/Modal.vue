@@ -5,12 +5,16 @@
         <div class="modal__overlay" @click.self="this.$emit('closeModal')">
           <div class="modal__content">
             <loading-modal v-if="config.type === 'loading'" />
-            <view-string-with-recaptcha-modal
+            <view-string-modal
               v-else-if="config.type === 'view-string'"
               :content="config.props"
             />
             <success-modal v-else-if="config.type === 'success'" />
             <failure-modal v-else-if="config.type === 'failure'" />
+            <recaptcha-v-2-modal
+              v-else-if="config.type === 'recaptcha'"
+              @recaptchaVerify="$emit('recaptchaVerify')"
+            />
             <div v-else>{{ config.type }}</div>
           </div>
         </div>
@@ -22,15 +26,17 @@
 <script>
 import FailureModal from "./FailureModal.vue";
 import LoadingModal from "./LoadingModal.vue";
+import RecaptchaV2Modal from "./RecaptchaV2Modal.vue";
 import SuccessModal from "./SuccessModal.vue";
-import ViewStringWithRecaptchaModal from "./ViewStringWithRecaptchaModal.vue";
+import ViewStringModal from "./ViewStringModal.vue";
 
 export default {
   components: {
     LoadingModal,
-    ViewStringWithRecaptchaModal,
+    ViewStringModal,
     FailureModal,
     SuccessModal,
+    RecaptchaV2Modal,
   },
   data() {
     return {};
@@ -38,7 +44,12 @@ export default {
   props: {
     config: Object,
   },
-  methods: {},
+  methods: {
+    recaptchaFailed(a) {
+      console.log(a);
+      this.$store.commit("setRecaptchaToken", null);
+    },
+  },
 };
 </script>
 
@@ -49,8 +60,8 @@ export default {
   width: 100vw;
   z-index: 99;
 
-  &__main {
-  }
+  // &__main {
+  // }
 
   &__overlay {
     width: 100%;

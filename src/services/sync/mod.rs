@@ -1,14 +1,13 @@
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{post, web, Responder};
 
 use crate::{
     config::Config,
-    utils::{self, Resource},
 };
 
 #[post("/api/reconcile")]
 async fn reconcile(
     pool: web::Data<sqlx::PgPool>,
-    config: web::Data<Config>,
+    _config: web::Data<Config>,
 ) -> actix_web::Result<impl Responder, Box<dyn std::error::Error>> {
     // let profiles = utils::get_resource(config, Resource::Profile).await?;
     let profiles: Vec<String> = vec![String::from("a")];

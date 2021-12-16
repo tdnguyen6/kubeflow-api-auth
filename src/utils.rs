@@ -1,7 +1,6 @@
 use std::{fs::File, io::Read};
-
+use reqwest::header::CONTENT_LENGTH;
 use serde::{Deserialize, Serialize};
-
 use crate::config::Config;
 
 #[derive(Serialize)]
@@ -10,28 +9,32 @@ struct Req {
     response: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Res {
     success: bool,
-    challenge_ts: String,
-    hostname: String,
+    #[serde(rename = "challenge_ts")]
+    _challenge_ts: String,
+    #[serde(rename = "hostname")]
+    _hostname: String,
     #[serde(rename = "error-codes")]
-    error_codes: Vec<u32>,
+    _error_codes: Option<Vec<u32>>,
 }
 
 pub async fn verify_recaptcha(config: &Config, token: &String) -> anyhow::Result<bool> {
-    return Ok(true);
     let client = reqwest::Client::new();
     let res: Res = client
-        .post("https://www.google.com/recaptcha/api/siteverify")
-        .json(&Req {
-            secret: config.recaptcha.secret.clone(),
-            response: token.clone(),
-        })
+        .post(format!(
+            "https://www.google.com/recaptcha/api/siteverify?secret={}&response={}",
+            config.recaptcha.secret.clone(),
+            token.clone(),
+        ))
+        .header(CONTENT_LENGTH, 0)
         .send()
-        .await?
+        .await
+        .expect("recaptcha verify request error")
         .json()
-        .await?;
+        .await
+        .expect("recaptcha verify response decode error");
 
     Ok(res.success)
 }
@@ -45,7 +48,7 @@ pub struct ResourceModel {
 pub enum Resource {
     Notebook,
     Model,
-    Profile
+    Profile,
 }
 
 pub async fn get_resource(
@@ -64,9 +67,9 @@ pub async fn get_resource(
         "{}/apis/{}",
         &config.apiserver,
         match resource {
-            Notebook => &config.kubeflow.notebook_resource,
-            Model => &config.kubeflow.model_resource,
-            Profile => &config.kubeflow.profile_resource,
+            Resource::Notebook => &config.kubeflow.notebook_resource,
+            Resource::Model => &config.kubeflow.model_resource,
+            Resource::Profile => &config.kubeflow.profile_resource,
         }
     );
 

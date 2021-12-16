@@ -4,7 +4,7 @@ export default createStore({
   state: {
     tokenData: {},
     userid: "",
-    recaptchaToken: "123",
+    recaptchaToken: null,
   },
   getters: {
     tokenList(state /*getters*/) {

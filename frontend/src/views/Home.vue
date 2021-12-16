@@ -1,7 +1,11 @@
 <template>
   <div class="home">
     <h2 class="title">API Access Control Settings</h2>
-    <modal :config="modal" @closeModal="onCloseModal()" />
+    <modal
+      :config="modal"
+      @closeModal="onCloseModal()"
+      @recaptchaVerify="recaptchaCallback"
+    />
     <div class="container">
       <div class="container__top">
         <div class="container__description">
@@ -83,12 +87,12 @@
                   <td>
                     <div
                       v-if="expired(t.end_date)"
-                      class="status-badge status-badge--active"
+                      class="status-badge status-badge--expired"
                     >
-                      Active
-                    </div>
-                    <div v-else class="status-badge status-badge--expired">
                       Expired
+                    </div>
+                    <div v-else class="status-badge status-badge--active">
+                      Active
                     </div>
                   </td>
                   <td>
@@ -103,7 +107,10 @@
                       <!-- <div > -->
                       <transition name="fade">
                         <div v-if="popUp[i]" class="pop-up">
-                          <div class="pop-up__row" @click="viewToken(t.id)">
+                          <div
+                            class="pop-up__row"
+                            @click="withRecaptcha(viewToken, t.id)"
+                          >
                             <fa icon="eye" /> View
                           </div>
                           <router-link :to="`/token/${i}`">
@@ -111,7 +118,10 @@
                               <fa icon="info-circle" /> Details
                             </div>
                           </router-link>
-                          <div class="pop-up__row" @click="deleteToken(t.id)">
+                          <div
+                            class="pop-up__row"
+                            @click="withRecaptcha(deleteToken, t.id)"
+                          >
                             <fa icon="trash" /> Delete
                           </div>
                         </div>
@@ -137,8 +147,10 @@
         </div>
         <div class="container__cta">
           <div class="container__cta-main">
-            <button @click="viewKey()"><fa icon="eye" /> View</button>
-            <button @click="rollKey()" class="orange-cta">
+            <button @click="withRecaptcha(viewKey)">
+              <fa icon="eye" /> View
+            </button>
+            <button @click="withRecaptcha(rollKey)" class="orange-cta">
               <fa icon="dice" /> Roll
             </button>
           </div>
@@ -179,58 +191,116 @@ export default {
         active: false,
         key: "",
       },
+      recaptchaCallbackArgs: {},
     };
   },
   methods: {
-    async viewKey() {
-      let res = await fetch(
-        `${process.env.VUE_APP_BACKEND_HOST}/api/key?email=${this.$store.getters.userId}&recaptchaToken=${this.$store.getters.recaptchaToken}`,
-        {
-          method: "POST",
-        }
-      );
-      let str = await res.text();
+    async withRecaptcha(fn, ...args) {
       this.$data.modal = {
         show: true,
-        type: "view-string",
-        props: {
-          str: str,
-        },
+        type: "recaptcha",
       };
+      this.recaptchaCallbackFn = fn;
+      this.recaptchaCallbackArgs = args;
+    },
+    async recaptchaCallback() {
+      this.$data.modal = {
+        show: false,
+        type: "",
+      };
+      await this.recaptchaCallbackFn(this.recaptchaCallbackArgs);
+      this.recaptchaCallbackFn = async () => {};
+    },
+    async recaptchaCallbackFn() {},
+    async viewKey() {
+      this.$data.modal = {
+        show: true,
+        type: "loading",
+      };
+      try {
+        let res = await fetch(
+          `${process.env.VUE_APP_BACKEND_HOST}/api/key?email=${this.$store.getters.userId}&recaptchaToken=${this.$store.getters.recaptchaToken}`,
+          {
+            method: "POST",
+          }
+        );
+        let str = await res.text();
+        this.$data.modal = {
+          show: true,
+          type: "view-string",
+          props: {
+            str: str,
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        this.$data.modal = {
+          show: true,
+          type: "failure",
+        };
+      }
     },
     async rollKey() {
-      let res = await fetch(
-        `${process.env.VUE_APP_BACKEND_HOST}/api/key/roll?email=${this.$store.getters.userId}&recaptchaToken=${this.$store.getters.recaptchaToken}`,
-        {
-          method: "POST",
-        }
-      );
-      let str = await res.text();
       this.$data.modal = {
         show: true,
-        type: "view-string",
-        props: {
-          str: str,
-        },
+        type: "loading",
       };
+      try {
+        let res = await fetch(
+          `${process.env.VUE_APP_BACKEND_HOST}/api/key/roll?email=${this.$store.getters.userId}&recaptchaToken=${this.$store.getters.recaptchaToken}`,
+          {
+            method: "POST",
+          }
+        );
+        let str = await res.text();
+        this.$data.modal = {
+          show: true,
+          type: "view-string",
+          props: {
+            str: str,
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        this.$data.modal = {
+          show: true,
+          type: "failure",
+        };
+      }
     },
     async viewToken(id) {
-      let res = await fetch(
-        `${process.env.VUE_APP_BACKEND_HOST}/api/token/${id}?recaptchaToken=${this.$store.getters.recaptchaToken}`,
-        {
-          method: "POST",
-        }
-      );
-      let str = await res.text();
       this.$data.modal = {
         show: true,
-        type: "view-string",
-        props: {
-          str: str,
-        },
+        type: "loading",
       };
+      try {
+        let res = await fetch(
+          `${process.env.VUE_APP_BACKEND_HOST}/api/token/${id}?recaptchaToken=${this.$store.getters.recaptchaToken}`,
+          {
+            method: "POST",
+          }
+        );
+        let str = await res.text();
+        this.$data.modal = {
+          show: true,
+          type: "view-string",
+          props: {
+            str: str,
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        this.$data.modal = {
+          show: true,
+          type: "failure",
+        };
+      }
     },
     async deleteToken(id) {
+      this.$data.modal = {
+        show: true,
+        type: "loading",
+      };
       try {
         let res = await fetch(
           `${process.env.VUE_APP_BACKEND_HOST}/api/token/${id}?recaptchaToken=${this.$store.getters.recaptchaToken}`,
@@ -238,7 +308,6 @@ export default {
             method: "DELETE",
           }
         );
-        console.log(res);
         if (res.ok) {
           this.$data.modal = {
             show: true,
@@ -249,6 +318,7 @@ export default {
           throw "request not ok";
         }
       } catch (e) {
+        console.log(e);
         this.$data.modal = {
           show: true,
           type: "failure",
@@ -256,7 +326,7 @@ export default {
       }
     },
     expired(date) {
-      return new Date().toLocaleDateString("en-CA") < date;
+      return new Date().toLocaleDateString("en-CA") > date;
     },
     onCloseModal() {
       this.$data.modal.show = false;
@@ -283,9 +353,9 @@ export default {
       if (this.$data.statusFilter.key != "All") {
         let expired = this.expired(token.end_date);
         if (this.$data.statusFilter.key == "Active") {
-          return expired;
+          return !expired;
         }
-        return !expired;
+        return expired;
       }
       return true;
     },

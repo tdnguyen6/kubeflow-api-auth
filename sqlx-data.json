@@ -1,0 +1,220 @@
+{
+  "db": "PostgreSQL",
+  "2bb34191e28268ce0837dfd76627cbac4c19f7365874505ecd15f4764cdbac85": {
+    "query": "DELETE FROM api_token WHERE email != ALL($1)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "38f46ecae6f0687ddae1809f6f8ec3f7ee093cb29f4b1eb4c2b18a8053a5d354": {
+    "query": "INSERT INTO api_key VALUES ($1, $2) RETURNING content",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "content",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Text"
+        ]
+      },
+      "nullable": [
+        true
+      ]
+    }
+  },
+  "3a7cf9c9dfa5e5fcd05ead5270df763e247112cbc3a2d63907d081107f29586d": {
+    "query": "UPDATE api_token SET content = $1 WHERE id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "5a35ce71f3afa09806e448f5b6ed7bc104b21060de9f09ce365b9d34037954cf": {
+    "query": "UPDATE api_key SET content = $1 WHERE email = $2 RETURNING content",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "content",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        true
+      ]
+    }
+  },
+  "6385c037200ae8e953c69b1c23dc33420fd436d9dc8330f960ec2bafa03cce10": {
+    "query": "UPDATE api_token SET last_used = $1 WHERE id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Date",
+          "Int4"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "6f1d1cd3ddcbdd3824d05f1a41b76a2e2b7fa57b3fd1b73eec99933a02335535": {
+    "query": "SELECT * FROM api_key WHERE email = $1 AND content = $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 1,
+          "name": "content",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        true
+      ]
+    }
+  },
+  "80b54621a5fda255c406735006739e41d3adcce2910747d4a36249fd82a14e82": {
+    "query": "DELETE FROM api_token WHERE id=$1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "8258c2e2aaca6c84744f457b9364cc4c2862a89bfd64c0e8fe398840988d21a0": {
+    "query": "SELECT content FROM api_token WHERE id=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "content",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": [
+        true
+      ]
+    }
+  },
+  "be80c7724793556828bdabf225ac706084b5593ec7227cea6df52d5a2a467852": {
+    "query": "SELECT * FROM api_token WHERE email = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "email",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "last_used",
+          "type_info": "Date"
+        },
+        {
+          "ordinal": 3,
+          "name": "content",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        true
+      ]
+    }
+  },
+  "d3feea461d7aebb286a646715f066f2a14ddf4ce2c47a09664de1ac9d024836b": {
+    "query": "INSERT INTO api_token (email) VALUES ($1) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "f1a7be70e56f875113339c2e12d34a4fc9c867420b7d514b14600a8a19f8fb1f": {
+    "query": "SELECT content FROM api_key WHERE email=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "content",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        true
+      ]
+    }
+  }
+}

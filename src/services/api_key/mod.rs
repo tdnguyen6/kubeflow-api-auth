@@ -1,6 +1,6 @@
-use actix_web::{post, web, App, HttpRequest, HttpResponse, HttpServer, Responder, Result};
+use actix_web::{post, web, HttpResponse, Responder, Result};
 use serde::Deserialize;
-use sqlx::{Executor, PgPool};
+use sqlx::{PgPool};
 use uuid::Uuid;
 
 use crate::{config::Config, utils};

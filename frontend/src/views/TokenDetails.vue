@@ -1,7 +1,11 @@
 <template>
   <div>
     <!-- {{ route.params }} -->
-    <modal :config="modalConfig" @closeModal="onCloseModal()" />
+    <modal
+      :config="modalConfig"
+      @closeModal="onCloseModal()"
+      @recaptchaVerify="recaptchaCallback"
+    />
     <div class="form">
       <div class="form__title">Token Details</div>
       <div class="form__block block">
@@ -65,7 +69,7 @@
       </div>
       <div v-if="template" class="form__block">
         <div class="cta cta--submit">
-          <button @click="submit()">Submit</button>
+          <button @click="withRecaptcha(submit)">Submit</button>
         </div>
       </div>
       <div class="form__back-home">
@@ -94,6 +98,7 @@ export default {
           ? this.$store.getters.tokenTemplate
           : this.$store.getters.tokenById(this.$route.params.id),
       modalConfig: {},
+      recaptchaCallbackArgs: {},
     };
   },
   computed: {
@@ -121,6 +126,23 @@ export default {
     },
   },
   methods: {
+    async withRecaptcha(fn, ...args) {
+      this.modalConfig = {
+        show: true,
+        type: "recaptcha",
+      };
+      this.recaptchaCallbackFn = fn;
+      this.recaptchaCallbackArgs = args;
+    },
+    async recaptchaCallback() {
+      this.modalConfig = {
+        show: false,
+        type: "",
+      };
+      await this.recaptchaCallbackFn(this.recaptchaCallbackArgs);
+      this.recaptchaCallbackFn = async () => {};
+    },
+    async recaptchaCallbackFn() {},
     updateTemplate() {
       this.$store.commit("updateTemplate", this.$data.token);
     },
@@ -219,8 +241,8 @@ export default {
 
       &__content {
         .input {
-          &--datepicker {
-          }
+          // &--datepicker {
+          // }
 
           &--text {
             input {
