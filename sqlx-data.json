@@ -216,5 +216,25 @@
         true
       ]
     }
+  },
+  "ff4c587611e8daf890c5af7b6fe7ceb59b325ffee466031040588334c5b314c1": {
+    "query": "SELECT email FROM api_token WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Varchar"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": [
+        true
+      ]
+    }
   }
 }

@@ -2,7 +2,7 @@ use std::{collections::HashMap, iter::FromIterator};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{config::Config, utils};
+use crate::{utils};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Rule {
@@ -57,8 +57,8 @@ impl Default for TokenCore {
 }
 
 impl TokenCore {
-    pub async fn better_default(&mut self, config: &Config) -> anyhow::Result<Self> {
-        self.rules = self.rules.clone().better_default(config).await?;
+    pub fn better_default(&mut self, kf_user: &str) -> anyhow::Result<Self> {
+        self.rules = self.rules.clone().better_default(kf_user)?;
         Ok(self.clone())
     }
 }
@@ -81,8 +81,8 @@ impl Default for Rule {
 }
 
 impl Rule {
-    pub async fn better_default(&mut self, config: &Config) -> anyhow::Result<Self> {
-        self.v1 = Some(self.v1.clone().unwrap().better_default(config).await?);
+    pub fn better_default(&mut self, kf_user: &str) -> anyhow::Result<Self> {
+        self.v1 = Some(self.v1.clone().unwrap().better_default(kf_user)?);
         Ok(self.clone())
     }
 }
@@ -95,19 +95,19 @@ impl V1Rule {
         }
     }
 
-    pub async fn better_default(&mut self, config: &Config) -> anyhow::Result<Self> {
+    pub fn better_default(&mut self, kf_user: &str) -> anyhow::Result<Self> {
+        let kf_user_ns = utils::kf_user_namespace(kf_user)?;
+
         self.notebooks = HashMap::from_iter(
-            utils::get_resource(config, utils::Resource::Notebook)
-                .await?
+            utils::kf_notebooks(Some(kf_user_ns.as_str()))?
                 .iter()
-                .map(|r| (r.name.clone(), true)),
+                .map(|r| (r.to_owned(), false)),
         );
 
         self.models = HashMap::from_iter(
-            utils::get_resource(config, utils::Resource::Model)
-                .await?
+            utils::kf_models(Some(kf_user_ns.as_str()))?
                 .iter()
-                .map(|r| (r.name.clone(), true)),
+                .map(|r| (r.to_owned(), false)),
         );
 
         Ok(self.clone())

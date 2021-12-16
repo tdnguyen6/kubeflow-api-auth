@@ -21,12 +21,16 @@ async fn check(
     let hdrs = req.headers();
     let kf_endpoint = config.kubeflow.interactive_endpoint.clone();
     let auth_res = match hdrs.get("Authorization") {
-        Some(_h) => token_auth(req, pool, config).await?,
+        Some(_h) => token_auth(req, pool, config.clone()).await?,
         None => key_auth(req, pool).await?,
     };
 
+    let userid_header = config.kubeflow.userid_header.as_str();
+
     if auth_res.success {
-        Ok(HttpResponse::Ok().body(auth_res.msg))
+        Ok(HttpResponse::Ok()
+            .append_header((userid_header, auth_res.email))
+            .body(auth_res.msg))
     } else {
         Ok(HttpResponse::Unauthorized()
             .append_header(ContentType::html())
@@ -44,6 +48,7 @@ async fn check(
 struct AuthRes {
     msg: String,
     success: bool,
+    email: String,
 }
 
 async fn key_auth(req: HttpRequest, pool: web::Data<sqlx::PgPool>) -> anyhow::Result<AuthRes> {
@@ -57,6 +62,7 @@ async fn key_auth(req: HttpRequest, pool: web::Data<sqlx::PgPool>) -> anyhow::Re
         return Ok(AuthRes {
             success: false,
             msg: String::from("no auth key"),
+            email: String::default(),
         });
     };
 
@@ -66,6 +72,7 @@ async fn key_auth(req: HttpRequest, pool: web::Data<sqlx::PgPool>) -> anyhow::Re
         return Ok(AuthRes {
             success: false,
             msg: String::from("no auth email"),
+            email: String::default(),
         });
     };
 
@@ -81,10 +88,12 @@ async fn key_auth(req: HttpRequest, pool: web::Data<sqlx::PgPool>) -> anyhow::Re
         Ok(_r) => Ok(AuthRes {
             success: true,
             msg: String::default(),
+            email: String::from(email),
         }),
         Err(e) => Ok(AuthRes {
             success: false,
             msg: e.to_string(),
+            email: String::default(),
         }),
     }
 }
@@ -112,11 +121,12 @@ async fn token_auth(
             if chrono::NaiveDate::parse_from_str(
                 token_data.claims.core.end_date.as_str(),
                 "%Y-%m-%d",
-            )? > today
+            )? < today
             {
                 return Ok(AuthRes {
                     success: false,
                     msg: String::from("token expired"),
+                    email: String::default(),
                 });
             }
 
@@ -128,12 +138,20 @@ async fn token_auth(
             .execute(&**pool)
             .await?;
 
+            let res = sqlx::query!(
+                "SELECT email FROM api_token WHERE id = $1",
+                &token_data.claims.id,
+            )
+            .fetch_one(&**pool)
+            .await?;
+
             let upstream_url = req.match_info().query("upstream_url");
 
             if rules::check(upstream_url, &token_data.claims.core.rules).await? {
                 return Ok(AuthRes {
                     success: true,
                     msg: String::default(),
+                    email: String::from(res.email.unwrap()),
                 });
             }
         }
@@ -142,5 +160,6 @@ async fn token_auth(
     Ok(AuthRes {
         success: false,
         msg: String::from("error verifying token"),
+        email: String::default(),
     })
 }

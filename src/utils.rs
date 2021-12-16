@@ -1,7 +1,7 @@
-use std::{fs::File, io::Read};
+use crate::config::Config;
+use cmd_lib::spawn_with_output;
 use reqwest::header::CONTENT_LENGTH;
 use serde::{Deserialize, Serialize};
-use crate::config::Config;
 
 #[derive(Serialize)]
 struct Req {
@@ -39,57 +39,67 @@ pub async fn verify_recaptcha(config: &Config, token: &String) -> anyhow::Result
     Ok(res.success)
 }
 
-#[derive(Deserialize)]
-pub struct ResourceModel {
-    pub name: String,
-    pub uid: String,
-}
-
-pub enum Resource {
-    Notebook,
-    Model,
-    Profile,
-}
-
-pub async fn get_resource(
-    config: &Config,
-    resource: Resource,
-) -> anyhow::Result<Vec<ResourceModel>> {
-    let mut buf = Vec::new();
-    File::open(format!("{}/ca.crt", config.service_account))?.read_to_end(&mut buf)?;
-    let client = reqwest::Client::builder()
-        .add_root_certificate(reqwest::Certificate::from_pem(&buf)?)
-        .build()?;
-
-    let token = std::fs::read_to_string(format!("{}/token", config.service_account))?;
-
-    let url = format!(
-        "{}/apis/{}",
-        &config.apiserver,
-        match resource {
-            Resource::Notebook => &config.kubeflow.notebook_resource,
-            Resource::Model => &config.kubeflow.model_resource,
-            Resource::Profile => &config.kubeflow.profile_resource,
+pub fn kf_notebooks(namespace: Option<&str>) -> anyhow::Result<Vec<String>> {
+    let mut proc = match namespace {
+        Some(ns) => {
+            spawn_with_output!(kubectl get notebook.kubeflow.org -n $ns -o jsonpath="{.items[*].metadata.name}")
         }
-    );
+        None => {
+            spawn_with_output!(kubectl get notebook.kubeflow.org -A -o jsonpath="{.items[*].metadata.name}")
+        }
+    }?;
 
-    let res: serde_json::Value = client
-        .get(url)
-        .header("Authorization", format!("Bearer {}", token))
-        .send()
-        .await?
-        .json()
-        .await?;
+    Ok(proc
+        .wait_with_output()?
+        .split(" ")
+        .filter(|s| *s != "")
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>())
+}
 
-    Ok(res
-        .get("items")
-        .unwrap()
+pub fn kf_models(namespace: Option<&str>) -> anyhow::Result<Vec<String>> {
+    let mut proc = match namespace {
+        Some(ns) => {
+            spawn_with_output!(kubectl get inferenceservice.serving.kubeflow.org -n $ns -o jsonpath="{.items[*].metadata.name}")
+        }
+        None => {
+            spawn_with_output!(kubectl get inferenceservice.serving.kubeflow.org -A -o jsonpath="{.items[*].metadata.name}")
+        }
+    }?;
+
+    Ok(proc
+        .wait_with_output()?
+        .split(" ")
+        .filter(|s| *s != "")
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>())
+}
+
+pub fn all_kf_users() -> anyhow::Result<Vec<String>> {
+    let mut proc = spawn_with_output!(kubectl get profile.kubeflow.org -A -o jsonpath="{.items[*].spec.owner.name}")?;
+
+    Ok(proc
+        .wait_with_output()?
+        .split(" ")
+        .filter(|s| *s != "")
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>())
+}
+
+pub fn kf_user_namespace(user: &str) -> anyhow::Result<String> {
+    let mut proc = spawn_with_output!(kubectl get profile.kubeflow.org -A -o jsonpath="{.items}")?;
+
+    let res: serde_json::Value = serde_json::from_str(proc.wait_with_output()?.as_str())?;
+    let fres = res
         .as_array()
         .unwrap()
         .iter()
-        .map(|i| ResourceModel {
-            name: i["metadata"]["name"].as_str().unwrap().to_string(),
-            uid: i["metadata"]["uid"].as_str().unwrap().to_string(),
-        })
-        .collect())
+        .filter(|e| e["spec"]["owner"]["name"] == user)
+        .map(|v| v["metadata"]["name"].as_str().unwrap().to_string())
+        .collect::<Vec<String>>();
+
+    match fres.first() {
+        Some(s) => Ok(s.to_owned()),
+        None => Ok(String::default()),
+    }
 }

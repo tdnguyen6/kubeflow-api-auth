@@ -15,7 +15,6 @@ struct Params {
     recaptcha_token: String,
 }
 
-
 #[derive(Debug, Deserialize)]
 pub struct RecaptchaOnlyParam {
     #[serde(rename = "recaptchaToken")]
@@ -153,8 +152,7 @@ async fn list(
                 },
             })
             .collect(),
-        template: TokenCore::default()
-        // .better_default(&config).await.expect("template error"),
+        template: TokenCore::default().better_default(&params.email)?,
     };
 
     Ok(HttpResponse::Ok().json(dto))

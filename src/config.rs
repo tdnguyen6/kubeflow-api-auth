@@ -9,8 +9,6 @@ pub struct Config {
     pub database_maxcon: u32,
     pub jwt_secret: String,
     pub recaptcha: RecaptchaCfg,
-    pub apiserver: String,
-    pub service_account: String,
 }
 
 #[derive(Deserialize, Default, Clone)]
