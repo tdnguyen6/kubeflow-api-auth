@@ -152,7 +152,7 @@ async fn list(
                 },
             })
             .collect(),
-        template: TokenCore::default().better_default(&params.email)?,
+        template: TokenCore::default().better_default(&params.email, &config)?,
     };
 
     Ok(HttpResponse::Ok().json(dto))

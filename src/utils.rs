@@ -39,13 +39,14 @@ pub async fn verify_recaptcha(config: &Config, token: &String) -> anyhow::Result
     Ok(res.success)
 }
 
-pub fn kf_notebooks(namespace: Option<&str>) -> anyhow::Result<Vec<String>> {
+pub fn kf_notebooks(namespace: Option<&str>, config: &Config) -> anyhow::Result<Vec<String>> {
+    let resource = &config.kubeflow.notebook_resource;
     let mut proc = match namespace {
         Some(ns) => {
-            spawn_with_output!(kubectl get notebook.kubeflow.org -n $ns -o jsonpath="{.items[*].metadata.name}")
+            spawn_with_output!(kubectl get $resource -n $ns -o jsonpath="{.items[*].metadata.name}")
         }
         None => {
-            spawn_with_output!(kubectl get notebook.kubeflow.org -A -o jsonpath="{.items[*].metadata.name}")
+            spawn_with_output!(kubectl get $resource -A -o jsonpath="{.items[*].metadata.name}")
         }
     }?;
 
@@ -57,13 +58,15 @@ pub fn kf_notebooks(namespace: Option<&str>) -> anyhow::Result<Vec<String>> {
         .collect::<Vec<String>>())
 }
 
-pub fn kf_models(namespace: Option<&str>) -> anyhow::Result<Vec<String>> {
+pub fn kf_models(namespace: Option<&str>, config: &Config) -> anyhow::Result<Vec<String>> {
+    let resource = &config.kubeflow.model_resource;
+
     let mut proc = match namespace {
         Some(ns) => {
-            spawn_with_output!(kubectl get inferenceservice.serving.kubeflow.org -n $ns -o jsonpath="{.items[*].metadata.name}")
+            spawn_with_output!(kubectl get $resource -n $ns -o jsonpath="{.items[*].metadata.name}")
         }
         None => {
-            spawn_with_output!(kubectl get inferenceservice.serving.kubeflow.org -A -o jsonpath="{.items[*].metadata.name}")
+            spawn_with_output!(kubectl get $resource -A -o jsonpath="{.items[*].metadata.name}")
         }
     }?;
 
@@ -75,8 +78,10 @@ pub fn kf_models(namespace: Option<&str>) -> anyhow::Result<Vec<String>> {
         .collect::<Vec<String>>())
 }
 
-pub fn all_kf_users() -> anyhow::Result<Vec<String>> {
-    let mut proc = spawn_with_output!(kubectl get profile.kubeflow.org -A -o jsonpath="{.items[*].spec.owner.name}")?;
+pub fn all_kf_users(config: &Config) -> anyhow::Result<Vec<String>> {
+    let resource = &config.kubeflow.profile_resource;
+
+    let mut proc = spawn_with_output!(kubectl get $resource -A -o jsonpath="{.items[*].spec.owner.name}")?;
 
     Ok(proc
         .wait_with_output()?
@@ -86,8 +91,10 @@ pub fn all_kf_users() -> anyhow::Result<Vec<String>> {
         .collect::<Vec<String>>())
 }
 
-pub fn kf_user_namespace(user: &str) -> anyhow::Result<String> {
-    let mut proc = spawn_with_output!(kubectl get profile.kubeflow.org -A -o jsonpath="{.items}")?;
+pub fn kf_user_namespace(user: &str, config: &Config) -> anyhow::Result<String> {
+    let resource = &config.kubeflow.profile_resource;
+
+    let mut proc = spawn_with_output!(kubectl get $resource -A -o jsonpath="{.items}")?;
 
     let res: serde_json::Value = serde_json::from_str(proc.wait_with_output()?.as_str())?;
     let fres = res

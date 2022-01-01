@@ -13,7 +13,7 @@ export default createStore({
     tokenById: (state /*getters*/) => (id) =>
       JSON.parse(JSON.stringify(state.tokenData.tokens[id])),
     tokenTemplate(state /*getters*/) {
-      return JSON.parse(JSON.stringify(state.tokenData.template));
+      return state.tokenData.template;
     },
     tokenListLength(state) {
       return state.tokenData.tokens.length;
@@ -32,9 +32,9 @@ export default createStore({
     setUserId(state, userid) {
       state.userid = userid;
     },
-    updateTemplate(state, template) {
-      state.tokenData.template = JSON.parse(JSON.stringify(template));
-    },
+    // updateTemplate(state, template) {
+    //   state.tokenData.template = JSON.parse(JSON.stringify(template));
+    // },
     // eslint-disable-next-line no-unused-vars
     updateTemplateLeaf(state, { jsonPath, lastPath, value }) {
       let tmpl = state.tokenData.template.rules;

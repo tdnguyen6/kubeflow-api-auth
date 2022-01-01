@@ -17,7 +17,6 @@ struct FrontendIndexTmpl<'a> {
 #[get("/")]
 pub async fn frontend(
     req: HttpRequest,
-    _pool: web::Data<sqlx::PgPool>,
     config: web::Data<Config>,
 ) -> actix_web::Result<impl Responder, Box<dyn std::error::Error>> {
     let hdrs = req.headers();

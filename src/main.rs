@@ -9,7 +9,7 @@ use actix_web::{get, web, App, HttpServer, Responder};
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
-#[get("/health")]
+#[get("/api/health")]
 async fn health() -> impl Responder {
     String::from("good")
 }
@@ -26,6 +26,7 @@ async fn main() -> anyhow::Result<()> {
         .await?;
 
     sqlx::migrate!().run(&pool).await?;
+    println!("Starting notebook-ci server...");
 
     Ok(HttpServer::new(move || {
         App::new()

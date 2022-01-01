@@ -7,10 +7,9 @@ use crate::{
 #[post("/api/reconcile")]
 async fn reconcile(
     pool: web::Data<sqlx::PgPool>,
-    _config: web::Data<Config>,
+    config: web::Data<Config>,
 ) -> actix_web::Result<impl Responder, Box<dyn std::error::Error>> {
-    // let profiles = utils::get_resource(config, Resource::Profile).await?;
-    let profiles = utils::all_kf_users()?;
+    let profiles = utils::all_kf_users(&config)?;
     let res = sqlx::query!(
         "DELETE FROM api_token WHERE email != ALL($1)",
         &profiles[..]

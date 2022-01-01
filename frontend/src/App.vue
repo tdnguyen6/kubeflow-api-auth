@@ -21,7 +21,7 @@ export default {
   },
   async created() {
     this.$store.commit("setUserId", sessionStorage.userid);
-    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("userid");
 
     let res = await fetch(
       `${process.env.VUE_APP_BACKEND_HOST}/api/token/list?email=${this.$store.state.userid}`
@@ -42,6 +42,7 @@ body {
   * {
     box-sizing: border-box;
   }
+  background: white;
 }
 
 #app {

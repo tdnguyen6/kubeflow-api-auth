@@ -112,7 +112,7 @@ export default {
       set(date) {
         this.$data.token.start_date = this.dateFmt(date[0]);
         this.$data.token.end_date = this.dateFmt(date[1]);
-        this.updateTemplate();
+        // this.updateTemplate();
       },
     },
     name: {
@@ -121,7 +121,7 @@ export default {
       },
       set(name) {
         this.$data.token.name = name;
-        this.updateTemplate();
+        // this.updateTemplate();
       },
     },
   },
@@ -143,9 +143,9 @@ export default {
       this.recaptchaCallbackFn = async () => {};
     },
     async recaptchaCallbackFn() {},
-    updateTemplate() {
-      this.$store.commit("updateTemplate", this.$data.token);
-    },
+    // updateTemplate() {
+    //   this.$store.commit("updateTemplate", this.$data.token);
+    // },
     onCloseModal() {},
     onCloseModalDefault() {
       this.modalConfig.show = false;
