@@ -66,7 +66,7 @@
                     <div v-if="statusFilter.active" class="cta__filter--select">
                       <select @change="updateView()" v-model="statusFilter.key">
                         <option value="Active">Active</option>
-                        <option value="Expired">Expired</option>
+                        <option value="Inactive">Inactive</option>
                         <option value="All">All</option>
                       </select>
                     </div>
@@ -86,10 +86,10 @@
                   <td>{{ t.last_used }}</td>
                   <td>
                     <div
-                      v-if="expired(t.end_date)"
+                      v-if="expired(t.start_date, t.end_date)"
                       class="status-badge status-badge--expired"
                     >
-                      Expired
+                      Inactive
                     </div>
                     <div v-else class="status-badge status-badge--active">
                       Active
@@ -325,8 +325,9 @@ export default {
         };
       }
     },
-    expired(date) {
-      return new Date().toLocaleDateString("en-CA") > date;
+    expired(start_date, end_date) {
+      let today = new Date().toLocaleDateString("en-CA");
+      return today < start_date || today > end_date;
     },
     onCloseModal() {
       this.$data.modal.show = false;

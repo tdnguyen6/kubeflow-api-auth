@@ -32,10 +32,6 @@ export default createStore({
     setUserId(state, userid) {
       state.userid = userid;
     },
-    // updateTemplate(state, template) {
-    //   state.tokenData.template = JSON.parse(JSON.stringify(template));
-    // },
-    // eslint-disable-next-line no-unused-vars
     updateTemplateLeaf(state, { jsonPath, lastPath, value }) {
       let tmpl = state.tokenData.template.rules;
       jsonPath.forEach((p) => (tmpl = tmpl[p]));

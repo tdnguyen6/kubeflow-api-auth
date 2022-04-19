@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use actix_web::{get, http::header::ContentType, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{route, http::header::ContentType, web, HttpRequest, HttpResponse, Responder};
 use askama::Template;
 
 use crate::{config::Config, models::api_token::TokenData, rules};
@@ -12,7 +12,18 @@ struct Error401Template<'a> {
     location: &'a str,
 }
 
-#[get("/check/{upstream_url:.*}")]
+#[route(
+    "/check/{upstream_url:.*}",
+    method = "GET",
+    method = "POST",
+    method = "PUT",
+    method = "PATCH",
+    method = "HEAD",
+    method = "DELETE",
+    method = "OPTIONS",
+    method = "TRACE",
+    method = "CONNECT",
+)]
 async fn check(
     req: HttpRequest,
     pool: web::Data<sqlx::PgPool>,
@@ -90,9 +101,9 @@ async fn key_auth(req: HttpRequest, pool: web::Data<sqlx::PgPool>) -> anyhow::Re
             msg: String::default(),
             email: String::from(email),
         }),
-        Err(e) => Ok(AuthRes {
+        Err(_) => Ok(AuthRes {
             success: false,
-            msg: e.to_string(),
+            msg: String::from("Wrong credentials"),
             email: String::default(),
         }),
     }
@@ -121,7 +132,10 @@ async fn token_auth(
             if chrono::NaiveDate::parse_from_str(
                 token_data.claims.core.end_date.as_str(),
                 "%Y-%m-%d",
-            )? < today
+            )? < today || chrono::NaiveDate::parse_from_str(
+                token_data.claims.core.start_date.as_str(),
+                "%Y-%m-%d",
+            )? > today
             {
                 return Ok(AuthRes {
                     success: false,

@@ -2,5 +2,5 @@
   cd containers/rust-musl-builder
   docker-compose up
 )
-docker build . -t cr.tidu.giize.com/kubeflow-api-auth
-docker push cr.tidu.giize.com/kubeflow-api-auth  
+docker build . -t ghcr.io/tidunguyen/kubeflow-api-auth
+docker push ghcr.io/tidunguyen/kubeflow-api-auth  
